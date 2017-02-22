@@ -96,7 +96,11 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					esc_url( $url )
 				);
 			}  else {
-				$preview = basename( $url );
+				$preview = sprintf(
+					'<p><img src="%s" style="width: 16px; height: auto;" /> %s</p>',
+					wp_mime_type_icon( $post->post_mime_type ),
+					basename( $url )
+				);
 			}
 
 			$author = get_userdata( $post->post_author );
