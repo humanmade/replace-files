@@ -55,7 +55,11 @@
 	<# } else { #>
 
 		<p><?php esc_html_e( 'Success! Replacement file uploaded.', 'sc' ) ?></p>
-		<img src="{{ data.url }}" style="max-width: 250px; height: auto" />
+
+		<# if ( data.type === 'image' ) { #>
+			<img src="{{ data.url }}" style="max-width: 250px; height: auto" />
+		<# } #>
+
 		<p><button type="submit" class="button"><?php esc_html_e( 'Submit for Approval', 'sc' ) ?></button></p>
 
 	<# } #>

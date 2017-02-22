@@ -88,10 +88,22 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					break;
 			}
 
+			$data = wp_get_attachment_metadata( $post->ID );
+			$url = wp_get_attachment_url( $post->ID );
+			if ( wp_attachment_is( 'image', $post->ID ) ) {
+				$preview = sprintf(
+					'<img src="%s" style="max-width: 100px; height: auto;" />',
+					esc_url( $url )
+				);
+			}  else {
+				$preview = basename( $url );
+			}
+
 			$author = get_userdata( $post->post_author );
 			return sprintf(
-				'<tr><td style="width: 150px;"><a href="%1$s"><img src="%1$s" style="max-width: 100px; height: auto;" /></a></td><td><p>%2$s</p><p>%3$s</p></td></tr>',
-				wp_get_attachment_url( $post->ID ),
+				'<tr><td style="width: 150px;"><a href="%s">%s</a></td><td><p>%s</p><p>%s</p></td></tr>',
+				$url,
+				$preview,
 				sprintf(
 					esc_html__( 'Uploaded by %s', 'sc' ),
 					esc_html( $author->display_name )
