@@ -1,3 +1,4 @@
+/* global plupload, scReplaceFilesSettings */
 ( function ( $ ) {
 	var options = scReplaceFilesSettings;
 	var uploader, statusTemplate, errorTemplate;
@@ -14,7 +15,7 @@
 	};
 	var renderError = function ( message ) {
 		var data = {
-			message: message,
+			message: message
 		};
 
 		var status = errorTemplate( data );
@@ -49,14 +50,12 @@
 			renderStatus( attachment );
 		},
 
-		error: function ( message, data, file ) {
-			renderError( message );
-		},
+		error: renderError
 	};
 
 	// init and set the uploader
 	var init = function() {
-		var isIE = navigator.userAgent.indexOf( 'Trident/' ) != -1 || navigator.userAgent.indexOf( 'MSIE ' ) != -1;
+		var isIE = navigator.userAgent.indexOf( 'Trident/' ) !== -1 || navigator.userAgent.indexOf( 'MSIE ' ) !== -1;
 
 		// Make sure flash sends cookies (seems in IE it does whitout switching to urlstream mode)
 		if ( ! isIE && 'flash' === plupload.predictRuntime( options ) &&
