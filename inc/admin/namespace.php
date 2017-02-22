@@ -2,6 +2,7 @@
 
 namespace SC\Replace_Files\Admin;
 
+use SC\Publish_Workflow\Approval;
 use SC\Replace_Files;
 use WP_Post;
 
@@ -102,6 +103,21 @@ function prepare_page() {
 		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'sc' ), 403 );
 	}
 
+	if ( ! empty( $_POST['action'] ) ) {
+		$action = wp_unslash( $_POST['action'] );
+		if ( $action !== 'submit-approval' ) {
+			wp_die( esc_html__( 'Invalid action.', 'sc' ), 400 );
+		}
+
+		check_admin_referer( 'sc-replace-submit-approval' );
+		if ( empty( $_POST['new-id'] ) ) {
+			wp_die( esc_html__( 'Missing new ID parameter.', 'sc' ), 400 );
+		}
+
+		$replacement = absint( wp_unslash( $_POST['new-id'] ) );
+		handle_submit_approval( $replacement );
+	}
+
 	$id = absint( wp_unslash( $_GET['id'] ) );
 	$attachment = get_post( $id );
 	if ( ! can_replace( $attachment ) || $attachment->post_type !== 'attachment' ) {
@@ -181,6 +197,19 @@ function override_attachment_status( $data ) {
 		return $data;
 	}
 
-	$data['post_status'] = 'edit-pending';
+	$data['post_status'] = 'edit-draft';
 	return $data;
+}
+
+/**
+ * Handle submit for approval.
+ */
+function handle_submit_approval( $id ) {
+	$attachment = get_post( $id );
+	if ( ! $attachment || ! current_user_can( 'edit_post', $attachment->ID ) || $attachment->post_type !== 'attachment' ) {
+		wp_die( esc_html__( 'Invalid attachment ID.', 'sc' ), 403 );
+	}
+
+	Approval\update_post_status( $attachment->ID, 'edit-pending' );
+	exit;
 }
