@@ -1,82 +1,83 @@
 /* global plupload, scReplaceFilesSettings */
-(function($) {
+( function( $ ) {
 	var options = scReplaceFilesSettings;
 	var uploader, statusTemplate, errorTemplate;
 
-	// Progress and success handlers for media multi uploads
-	var renderStatus = function(attachment) {
+	// progress and success handlers for media multi uploads
+	var renderStatus = function( attachment ) {
 		var attr = attachment.attributes;
-		var $status = jQuery.parseHTML(statusTemplate(attr).trim());
+		var $status = jQuery.parseHTML( statusTemplate( attr ).trim() );
 
-		$('.bar', $status).width((200 * attr.loaded) / attr.size);
-		$('.percent', $status).html(attr.percent + '%');
+		$( '.bar', $status ).width( ( 200 * attr.loaded ) / attr.size );
+		$( '.percent', $status ).html( attr.percent + '%' );
 
-		$('.drag-drop-status').empty().append($status);
+		$( '.drag-drop-status' ).empty().append( $status );
 	};
-	var renderError = function (message) {
+	var renderError = function( message ) {
 		var data = {
 			message: message
 		};
 
-		var status = errorTemplate(data);
-		var $status = $('.drag-drop-status');
-		$status.html(status);
-		$status.one('click', 'button', function () {
+		var status = errorTemplate( data );
+		var $status = $( '.drag-drop-status' );
+		$status.html( status );
+		$status.one( 'click', 'button', function() {
 			$status.empty().hide();
-			$('.drag-drop-selector').show();
+			$( '.drag-drop-selector' ).show();
 		});
 	};
 	var actions = {
-		init: function () {
-			var uploaddiv = $('#plupload-upload-ui');
+		init: function() {
+			var uploaddiv = $( '#plupload-upload-ui' );
 
-			if (uploader.supports.dragdrop) {
-				uploaddiv.addClass('drag-drop');
+			if ( uploader.supports.dragdrop ) {
+				uploaddiv.addClass( 'drag-drop' );
 			} else {
-				uploaddiv.removeClass('drag-drop');
+				uploaddiv.removeClass( 'drag-drop' );
 			}
 		},
 
-		added: function (attachment) {
-			$('.drag-drop-selector').hide();
-			$('.drag-drop-status').show();
+		added: function( attachment ) {
+			$( '.drag-drop-selector' ).hide();
+			$( '.drag-drop-status' ).show();
 
-			renderStatus(attachment);
+			renderStatus( attachment );
 		},
 
 		progress: renderStatus,
-		success: function (attachment) {
-			$('#scrf-new-id').val(attachment.id);
-			renderStatus(attachment);
+		success: function( attachment ) {
+			$( '#scrf-new-id' ).val( attachment.id );
+			renderStatus( attachment );
 		},
 
 		error: renderError
 	};
 
-	// Init and set the uploader
+	// init and set the uploader
 	var init = function() {
-		var isIE = navigator.userAgent.indexOf('Trident/') !== -1 || navigator.userAgent.indexOf('MSIE ') !== -1;
+		var isIE = navigator.userAgent.indexOf( 'Trident/' ) !== -1 || navigator.userAgent.indexOf( 'MSIE ' ) !== -1;
 
 		// Make sure flash sends cookies (seems in IE it does whitout switching to urlstream mode)
-		if (! isIE && 'flash' === plupload.predictRuntime(options) &&
-			(! options.required_features || ! options.required_features.hasOwnProperty('send_binary_string'))) {
+		if ( ! isIE && 'flash' === plupload.predictRuntime( options ) &&
+			( ! options.required_features || ! options.required_features.hasOwnProperty( 'send_binary_string' ) ) ) {
 
 			options.required_features = options.required_features || {};
 			options.required_features.send_binary_string = true;
 		}
 
-		var instanceOptions = _.extend({}, options, actions);
-		instanceOptions.browser = $('#plupload-browse-button');
-		instanceOptions.dropzone = $('#plupload-upload-ui');
+		var instanceOptions = _.extend( {}, options, actions );
+		instanceOptions.browser = $( '#plupload-browse-button' );
+		instanceOptions.dropzone = $( '#plupload-upload-ui' );
 
-		uploader = new wp.Uploader(instanceOptions);
+		uploader = new wp.Uploader( instanceOptions );
 	};
 
-	$(document).ready(function() {
-		statusTemplate = wp.template('scrf-upload-status');
-		errorTemplate = wp.template('scrf-upload-error');
+	$( document ).ready( function() {
+		statusTemplate = wp.template( 'scrf-upload-status' );
+		errorTemplate = wp.template( 'scrf-upload-error' );
 
 		init();
 	});
 
-})(jQuery);
+
+})( jQuery );
