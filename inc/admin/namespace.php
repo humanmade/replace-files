@@ -336,5 +336,13 @@ function handle_submit_approval( $id ) {
 	}
 
 	Approval\update_post_status( $attachment->ID, 'edit-pending' );
+
+	$base = admin_url( 'upload.php' );
+	$args = [
+		'item' => $attachment->post_parent,
+		'sc_submitted' => true,
+	];
+	$url = add_query_arg( urlencode_deep( $args ), $base );
+	wp_safe_redirect( $url );
 	exit;
 }
