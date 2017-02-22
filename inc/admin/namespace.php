@@ -94,19 +94,25 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					}
 					break;
 			}
-			$needs_submission = $post->post_status === 'edit-draft';
+
+			$author = get_userdata( $post->post_author );
 			return sprintf(
-				'<li><a href="%1$s"><img src="%1$s" style="max-width: 50px; height: auto;" /></a> %2$s</li>',
+				'<tr><td style="width: 150px;"><a href="%1$s"><img src="%1$s" style="max-width: 100px; height: auto;" /></a></td><td><p>%2$s</p><p>%3$s</p></td></tr>',
 				wp_get_attachment_url( $post->ID ),
+				sprintf(
+					esc_html__( 'Uploaded by %s', 'sc' ),
+					esc_html( $author->display_name )
+				),
 				$action
 			);
 		}, $pending );
-		$fields['sc_pending_files'] = [
-			'label' => __( 'Pending Replacements', 'sc' ),
-			'input' => 'html',
-			'value' => '',
-			'html' => '<ul>' . implode( '', $items ) . '</ul>',
-		];
+
+		// Add into `_final`.
+		if ( empty( $fields['_final'] ) ) {
+			$fields['_final'] = '';
+		}
+		$fields['_final'] .= sprintf( '<h3>%s</h3>', esc_html__( 'Pending Changes', 'sc' ) );
+		$fields['_final'] .= '<table>' . implode( '', $items ) . '</table>';
 	}
 
 	return $fields;
