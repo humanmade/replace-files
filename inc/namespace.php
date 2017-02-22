@@ -2,6 +2,8 @@
 
 namespace SC\Replace_Files;
 
+use WP_Post;
+
 /**
  * Bootstrap.
  */
@@ -10,6 +12,7 @@ function bootstrap() {
 
 	add_action( 'sc_updated_post_with_clone', __NAMESPACE__ . '\\replace_image_with_new', 10, 2 );
 	add_filter( 'sc_clone_post_excluded_meta_keys', __NAMESPACE__ . '\\exclude_attached_file_from_clone' );
+	add_action( 'sc_workflow_reject_post', __NAMESPACE__ . '\\on_reject_post', 10, 2 );
 }
 
 /**
@@ -46,4 +49,26 @@ function replace_image_with_new( $original_id, $new_id ) {
 	if ( ! $success ) {
 		trigger_error( sprintf( 'Unable to replace %s with %s (#%d)', $old_file, $new_file, $original->ID ), E_USER_WARNING );
 	}
+}
+
+/**
+ * Delete attachments on rejection.
+ *
+ * @param mixed $result
+ * @param WP_Post $post Post being rejected.
+ * @return mixed
+ */
+function on_reject_post( $result, WP_Post $post ) {
+	if ( is_wp_error( $result ) || $post->post_type !== 'attachment' ) {
+		return $result;
+	}
+
+	// Only if it went from pending -> rejected
+	if ( $post->post_status !== 'edit-draft' ) {
+		// return $result;
+	}
+
+	// Remove the attachment.
+	wp_delete_attachment( $post->ID );
+	return $result;
 }
