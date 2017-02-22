@@ -85,20 +85,6 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 							esc_html__( 'Preview', 'sc' )
 						);
 					}
-					if ( current_user_can( 'approve_post', $post->ID ) ) {
-						$action .= sprintf(
-							'<a href="%s" class="button">%s</a>',
-							Approval\get_action_url( $post->ID, 'approve' ),
-							esc_html__( 'Approve', 'sc' )
-						);
-					}
-					if ( current_user_can( 'reject_post', $post->ID ) ) {
-						$action .= sprintf(
-							'<a href="%s" class="button">%s</a>',
-							Approval\get_action_url( $post_id, 'reject' ),
-							esc_html__( 'Reject', 'sc' )
-						);
-					}
 					break;
 			}
 
