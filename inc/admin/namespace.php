@@ -69,7 +69,11 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 			$action = '';
 			switch ( $post->post_status ) {
 				case 'edit-draft':
-					$action = get_submit_button( $post );
+					$action = sprintf(
+						'<a class="button" href="%s">%s</a>',
+						esc_url( get_submit_url( $post ) ),
+						esc_html__( 'Submit for Approval', 'sc' )
+					);
 					break;
 
 				case 'edit-pending':
@@ -130,29 +134,16 @@ function get_page_url( WP_Post $attachment ) {
  * @param WP_Post $attachment Replacement attachment post.
  * @return string URL for the submit approval page.
  */
-function get_submit_button( WP_Post $attachment ) {
+function get_submit_url( WP_Post $attachment ) {
 	$parent = get_post( $attachment->post_parent );
 	$base = get_page_url( $parent );
-
-	$button = sprintf(
-		'<button class="button">%s</button>',
-		esc_html__( 'Submit for Approval', 'sc' )
-	);
-	$inputs = [
-		'<input type="hidden" name="action" value="submit-approval" />',
-		sprintf(
-			'<input type="hidden" name="new-id" value="%d" />',
-			esc_attr( $attachment->ID )
-		),
-		wp_nonce_field( 'sc-replace-submit-approval', '_wpnonce', true, false )
+	$args = [
+		'action' => 'submit-approval',
+		'new-id' => $attachment->ID,
+		'_wpnonce' => wp_create_nonce( 'sc-replace-submit-approval' ),
 	];
-	$form = sprintf(
-		'<form action="%s" method="post">%s%s</form>',
-		$base,
-		implode( '', $inputs ),
-		$button
-	);
-	return $form;
+	$url = add_query_arg( urlencode_deep( $args ), $base );
+	return $url;
 }
 
 /**
@@ -180,18 +171,18 @@ function prepare_page() {
 		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'sc' ), 403 );
 	}
 
-	if ( ! empty( $_POST['action'] ) ) {
-		$action = wp_unslash( $_POST['action'] );
+	if ( ! empty( $_REQUEST['action'] ) ) {
+		$action = wp_unslash( $_REQUEST['action'] );
 		if ( $action !== 'submit-approval' ) {
 			wp_die( esc_html__( 'Invalid action.', 'sc' ), 400 );
 		}
 
 		check_admin_referer( 'sc-replace-submit-approval' );
-		if ( empty( $_POST['new-id'] ) ) {
+		if ( empty( $_REQUEST['new-id'] ) ) {
 			wp_die( esc_html__( 'Missing new ID parameter.', 'sc' ), 400 );
 		}
 
-		$replacement = absint( wp_unslash( $_POST['new-id'] ) );
+		$replacement = absint( wp_unslash( $_REQUEST['new-id'] ) );
 		handle_submit_approval( $replacement );
 	}
 
