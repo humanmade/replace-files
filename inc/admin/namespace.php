@@ -59,6 +59,52 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 		),
 	];
 
+	$pending = get_posts([
+		'post_type'   => 'attachment',
+		'post_parent' => $attachment->ID,
+		'post_status' => [ 'edit-draft', 'edit-pending', 'edit-approve' ],
+	]);
+	if ( ! empty( $pending ) ) {
+		$items = array_map( function ( $post ) {
+			$action = '';
+			switch ( $post->post_status ) {
+				case 'edit-draft':
+					$action = get_submit_button( $post );
+					break;
+
+				case 'edit-pending':
+					$action = 'Awaiting Approval';
+					if ( current_user_can( 'approve_post', $post->ID ) ) {
+						$action .= sprintf(
+							'<a href="%s" class="button">%s</a>',
+							Approval\get_action_url( $post->ID, 'approve' ),
+							esc_html__( 'Approve', 'sc' )
+						);
+					}
+					if ( current_user_can( 'reject_post', $post->ID ) ) {
+						$action .= sprintf(
+							'<a href="%s" class="button">%s</a>',
+							Approval\get_action_url( $post_id, 'reject' ),
+							esc_html__( 'Reject', 'sc' )
+						);
+					}
+					break;
+			}
+			$needs_submission = $post->post_status === 'edit-draft';
+			return sprintf(
+				'<li><a href="%1$s"><img src="%1$s" style="max-width: 50px; height: auto;" /></a> %2$s</li>',
+				wp_get_attachment_url( $post->ID ),
+				$action
+			);
+		}, $pending );
+		$fields['sc_pending_files'] = [
+			'label' => __( 'Pending Replacements', 'sc' ),
+			'input' => 'html',
+			'value' => '',
+			'html' => '<ul>' . implode( '', $items ) . '</ul>',
+		];
+	}
+
 	return $fields;
 }
 
@@ -76,6 +122,37 @@ function get_page_url( WP_Post $attachment ) {
 	];
 	$url = add_query_arg( urlencode_deep( $args ), $base );
 	return $url;
+}
+
+/**
+ * Get "Submit for Approval" URL for a replacement.
+ *
+ * @param WP_Post $attachment Replacement attachment post.
+ * @return string URL for the submit approval page.
+ */
+function get_submit_button( WP_Post $attachment ) {
+	$parent = get_post( $attachment->post_parent );
+	$base = get_page_url( $parent );
+
+	$button = sprintf(
+		'<button class="button">%s</button>',
+		esc_html__( 'Submit for Approval', 'sc' )
+	);
+	$inputs = [
+		'<input type="hidden" name="action" value="submit-approval" />',
+		sprintf(
+			'<input type="hidden" name="new-id" value="%d" />',
+			esc_attr( $attachment->ID )
+		),
+		wp_nonce_field( 'sc-replace-submit-approval', '_wpnonce', true, false )
+	];
+	$form = sprintf(
+		'<form action="%s" method="post">%s%s</form>',
+		$base,
+		implode( '', $inputs ),
+		$button
+	);
+	return $form;
 }
 
 /**
