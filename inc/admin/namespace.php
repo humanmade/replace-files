@@ -252,7 +252,7 @@ function set_uploader_settings( WP_Post $attachment ) {
 		'plupload' => array(
 			'multipart_params' => array(
 				'post_id' => $attachment->ID,
-				'sc_replace_file_override_status' => wp_create_nonce( 'sc_replace_file_override_status' ),
+				'sc_replace_file' => wp_create_nonce( 'sc_replace_file' ),
 			),
 		),
 	];
@@ -273,12 +273,12 @@ function override_attachment_status( $data ) {
 		return $data;
 	}
 
-	if ( empty( $_REQUEST['sc_replace_file_override_status'] ) ) {
+	if ( empty( $_REQUEST['sc_replace_file'] ) ) {
 		return $data;
 	}
 
-	$nonce = wp_unslash( $_REQUEST['sc_replace_file_override_status'] );
-	if ( ! wp_verify_nonce( $nonce, 'sc_replace_file_override_status' ) ) {
+	$nonce = wp_unslash( $_REQUEST['sc_replace_file'] );
+	if ( ! wp_verify_nonce( $nonce, 'sc_replace_file' ) ) {
 		return $data;
 	}
 
