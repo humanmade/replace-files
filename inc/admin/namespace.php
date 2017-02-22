@@ -77,7 +77,14 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					break;
 
 				case 'edit-pending':
-					$action = 'Awaiting Approval';
+					$action = esc_html__( 'Awaiting approval', 'sc' ) . '<br />';
+					if ( current_user_can( 'preview_post', $post->ID ) ) {
+						$action .= sprintf(
+							'<a href="%s" class="button">%s</a>',
+							Approval\get_action_url( $post->ID, 'preview' ),
+							esc_html__( 'Preview', 'sc' )
+						);
+					}
 					if ( current_user_can( 'approve_post', $post->ID ) ) {
 						$action .= sprintf(
 							'<a href="%s" class="button">%s</a>',
