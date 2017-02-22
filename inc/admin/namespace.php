@@ -2,6 +2,7 @@
 
 namespace SC\Replace_Files\Admin;
 
+use SC\Replace_Files;
 use WP_Post;
 
 const PAGE_SLUG = 'sc-replace-file';
@@ -109,7 +110,13 @@ function prepare_page() {
 
 	// Set page title.
 	$GLOBALS['title'] = __( 'Replace Existing File', 'sc' );
-	wp_enqueue_script( 'plupload-handlers' );
+
+	$url = plugins_url( 'assets/upload.js', Replace_Files\FILE );
+	$deps = [
+		'wp-backbone',
+		'wp-plupload',
+	];
+	wp_enqueue_script( 'sc-replace-files-uploader', $url, $deps, false, true );
 }
 
 /**
@@ -119,35 +126,36 @@ function render_page() {
 	$id = absint( wp_unslash( $_GET['id'] ) );
 	$attachment = get_post( $id );
 
+	set_uploader_settings( $attachment );
+
 	$path = wp_get_attachment_url( $attachment->ID );
 	$filename = basename( $path );
 
+	// Header.
 	printf( '<h1>%s</h1>', esc_html__( 'Replace Existing File', 'sc' ) );
 	echo wp_kses( sprintf( '<p>' . __( 'Replacing <code>%s</code>', 'sc' ) . '</p>', $filename ), 'data' );
 
-	printf(
-		'<form enctype="multipart/form-data" method="post" action="%s" class="%s" id="file-form">',
-		esc_url( admin_url( 'media-new.php' ) ),
-		'media-upload-form type-form validate'
-	);
-	printf( '<input type="hidden" name="post_id" id="post_id" value="%d" />', $attachment->ID );
-	wp_nonce_field( 'media-form' );
+	// Upload form.
+	$url = get_page_url( $attachment );
+	require Replace_Files\DIR . '/templates/upload.php';
+}
 
-	// Make the attachment a child of the existing attachment.
-	$callback = function ( $params ) use ( $attachment ) {
-		$params['post_id'] = $attachment->ID;
-		$params['sc_replace_file_override_status'] = wp_create_nonce( 'sc_replace_file_override_status' );
-		return $params;
-	};
-	add_filter( 'upload_post_params', $callback );
-	media_upload_form();
-	remove_filter( 'upload_post_params', $callback );
-
-	echo '<div id="media-items" class="hide-if-no-js"></div>';
-
-	echo '</form>';
-
-	echo 'render';
+/**
+ * Set settings for uploader JS.
+ *
+ * @param WP_Post $attachment Attachment to replace.
+ */
+function set_uploader_settings( WP_Post $attachment ) {
+	wp_plupload_default_settings();
+	$settings = [
+		'plupload' => array(
+			'multipart_params' => array(
+				'post_id' => $attachment->ID,
+				'sc_replace_file_override_status' => wp_create_nonce( 'sc_replace_file_override_status' ),
+			),
+		),
+	];
+	wp_localize_script( 'sc-replace-files-uploader', 'scReplaceFilesSettings', $settings );
 }
 
 /**
