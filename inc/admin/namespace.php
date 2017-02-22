@@ -3,6 +3,7 @@
 namespace SC\Replace_Files\Admin;
 
 use SC\Publish_Workflow\Approval;
+use SC\Publish_Workflow\Edit;
 use SC\Replace_Files;
 use WP_Post;
 
@@ -17,6 +18,7 @@ function bootstrap() {
 	add_action( 'admin_menu', __NAMESPACE__ . '\\register_page' );
 	add_filter( 'attachment_fields_to_edit', __NAMESPACE__ . '\\add_replace_button_to_fields', 10, 2 );
 	add_filter( 'wp_insert_attachment_data', __NAMESPACE__ . '\\override_attachment_status' );
+	add_action( 'add_attachment', __NAMESPACE__ . '\\clone_attachment_meta' );
 }
 
 /**
@@ -280,8 +282,48 @@ function override_attachment_status( $data ) {
 		return $data;
 	}
 
+	// Take the data from the parent.
+	$parent = get_post( $data['post_parent'], ARRAY_A );
+	if ( empty( $parent ) ) {
+		return $data;
+	}
+
+	// Remove parts added by WP_Post::to_array
+	foreach ( [ 'filter', 'ancestors', 'page_template', 'post_category', 'tags_input' ] as $key ) {
+		unset( $parent[ $key ] );
+	}
+
+	// Remove bits we don't need.
+	unset( $parent['ID'] );
+	unset( $parent['guid'] );
+	unset( $parent['post_name'] );
+	unset( $parent['post_author'] );
+	unset( $parent['post_parent'] );
+
+	$data = array_merge( $data, $parent );
 	$data['post_status'] = 'edit-draft';
+
 	return $data;
+}
+
+/**
+ * Clone attachment meta when replacing.
+ */
+function clone_attachment_meta( $id ) {
+	$attachment = get_post( $id );
+
+	// Sanity check.
+	if ( ! $attachment || $attachment->post_type !== 'attachment' ) {
+		return;
+	}
+
+	// Skip posts that aren't ours.
+	if ( $attachment->post_status !== 'edit-draft' || empty( $attachment->post_parent ) ) {
+		return;
+	}
+
+	// Copy meta from parent.
+	Edit\clone_post_meta( $attachment->post_parent, $attachment->ID );
 }
 
 /**
