@@ -7,7 +7,8 @@
 		 * @since 2.6.0 As 'pre-flash-upload-ui'
 		 * @since 3.3.0
 		 */
-		do_action( 'pre-plupload-upload-ui' ); ?>
+		do_action( 'pre-plupload-upload-ui' ); // @codingStandardsIgnoreLine WordPress.NamingConventions.ValidHookName.UseUnderscores
+		?>
 
 		<div id="drag-drop-area" style="height: auto; min-height: 200px;">
 			<div class="drag-drop-inside drag-drop-selector">
@@ -25,7 +26,8 @@
 		 * @since 2.6.0 As 'post-flash-upload-ui'
 		 * @since 3.3.0
 		 */
-		do_action( 'post-plupload-upload-ui' ); ?>
+		do_action( 'post-plupload-upload-ui' ); // @codingStandardsIgnoreLine WordPress.NamingConventions.ValidHookName.UseUnderscores
+		?>
 	</div>
 
 	<input type="hidden" name="action" value="submit-approval" />
