@@ -81,11 +81,6 @@ function on_reject_post( $result, WP_Post $post ) {
 		return $result;
 	}
 
-	// Only if it went from pending -> rejected
-	if ( $post->post_status !== 'edit-draft' ) {
-		// return $result;
-	}
-
 	// Remove the attachment.
 	wp_delete_attachment( $post->ID );
 	return $result;
