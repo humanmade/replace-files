@@ -97,7 +97,7 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					'<img src="%s" style="max-width: 100px; height: auto;" />',
 					esc_url( $url )
 				);
-			}  else {
+			} else {
 				$preview = sprintf(
 					'<p><img src="%s" style="width: 16px; height: auto;" /> %s</p>',
 					wp_mime_type_icon( $post->post_mime_type ),
@@ -210,7 +210,7 @@ function prepare_page() {
 	}
 
 	// Set page title.
-	$GLOBALS['title'] = __( 'Replace Existing File', 'sc' );
+	$GLOBALS['title'] = __( 'Replace Existing File', 'sc' ); // WPCS: override ok.
 
 	$url = plugins_url( 'assets/upload.js', Replace_Files\FILE );
 	$deps = [

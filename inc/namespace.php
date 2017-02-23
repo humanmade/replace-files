@@ -65,7 +65,7 @@ function replace_image_with_new( $original_id, $new_id ) {
 	// Execute the replacement.
 	$success = copy( $new_file, $old_file );
 	if ( ! $success ) {
-		trigger_error( sprintf( 'Unable to replace %s with %s (#%d)', $old_file, $new_file, $original->ID ), E_USER_WARNING );
+		trigger_error( sprintf( 'Unable to replace %s with %s (#%d)', $old_file, $new_file, $original->ID ), E_USER_WARNING ); // WPCS: XSS ok.
 	}
 }
 

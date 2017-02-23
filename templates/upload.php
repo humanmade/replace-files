@@ -34,16 +34,18 @@
 </form>
 
 <p class="max-upload-size"><?php printf(
-	__( 'Maximum upload file size: %s.', 'sc' ),
+	esc_html__( 'Maximum upload file size: %s.', 'sc' ),
 	esc_html( size_format( wp_max_upload_size() ) )
 ) ?></p>
 
 <script type="text/html" id="tmpl-scrf-upload-status">
 	<# if ( data.uploading ) { #>
-		<p><?php echo wp_kses( sprintf(
+		<p><?php
+		echo wp_kses( sprintf(
 			__( 'Uploading %s&#8230;', 'sc' ),
 			'<code>{{ data.filename }}</code>'
-		), 'data' ) ?></p>
+		), 'data' )
+		?></p>
 
 		<div class="media-item">
 			<div class="progress">
@@ -66,9 +68,11 @@
 </script>
 
 <script type="text/html" id="tmpl-scrf-upload-error">
-	<p><?php printf(
+	<p><?php
+	printf(
 		esc_html__( 'Whoops, could not upload file: %s', 'sc' ),
 		'{{ data.message }}'
-	) ?></p>
+	)
+	?></p>
 	<p><button type="button" class="button"><?php esc_html_e( 'Try Again', 'sc' ) ?></button></p>
 </script>
