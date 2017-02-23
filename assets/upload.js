@@ -3,7 +3,7 @@
 	var options = scReplaceFilesSettings;
 	var uploader, statusTemplate, errorTemplate;
 
-	// progress and success handlers for media multi uploads
+	// Progress and success handlers for media multi uploads
 	var renderStatus = function( attachment ) {
 		var attr = attachment.attributes;
 		var $status = jQuery.parseHTML( statusTemplate( attr ).trim() );
@@ -53,7 +53,7 @@
 		error: renderError
 	};
 
-	// init and set the uploader
+	// Init and set the uploader
 	var init = function() {
 		var isIE = navigator.userAgent.indexOf( 'Trident/' ) !== -1 || navigator.userAgent.indexOf( 'MSIE ' ) !== -1;
 
@@ -78,6 +78,5 @@
 
 		init();
 	});
-
 
 })( jQuery );
