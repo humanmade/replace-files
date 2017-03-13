@@ -170,7 +170,7 @@ function get_submit_url( WP_Post $attachment ) {
  * @return bool
  */
 function can_replace( WP_Post $attachment ) {
-	return current_user_can( 'edit_post', $attachment->ID );
+	return current_user_can( 'upload_files' );
 }
 
 /**
