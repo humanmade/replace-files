@@ -4,7 +4,6 @@ namespace HM\Replace_Files\Admin;
 
 use HM\Replace_Files;
 use SC\Publish_Workflow\Approval;
-use SC\Publish_Workflow\Edit;
 use WP_Post;
 
 const PAGE_SLUG = 'hm-replace-file';
@@ -318,12 +317,12 @@ function clone_attachment_meta( $id ) {
 	}
 
 	// Skip posts that aren't ours.
-	if ( $attachment->post_status !== 'edit-draft' || empty( $attachment->post_parent ) ) {
+	if ( $attachment->post_status !== 'draft' || empty( $attachment->post_parent ) ) {
 		return;
 	}
 
 	// Copy meta from parent.
-	Edit\clone_post_meta( $attachment->post_parent, $attachment->ID );
+	Replace_Files\clone_post_meta( $attachment->post_parent, $attachment->ID );
 }
 
 /**
