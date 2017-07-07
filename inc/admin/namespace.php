@@ -63,13 +63,13 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 	$pending = get_posts([
 		'post_type'   => 'attachment',
 		'post_parent' => $attachment->ID,
-		'post_status' => [ 'edit-draft', 'edit-pending', 'edit-approve' ],
+		'post_status' => [ 'draft', 'pending' ],
 	]);
 	if ( ! empty( $pending ) ) {
 		$items = array_map( function ( $post ) {
 			$action = '';
 			switch ( $post->post_status ) {
-				case 'edit-draft':
+				case 'draft':
 					$action = sprintf(
 						'<a class="button" href="%s">%s</a>',
 						esc_url( get_submit_url( $post ) ),
@@ -77,7 +77,7 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					);
 					break;
 
-				case 'edit-pending':
+				case 'pending':
 					$action = esc_html__( 'Awaiting approval', 'replace_files' ) . '<br />';
 					if ( current_user_can( 'preview_post', $post->ID ) ) {
 						$action .= sprintf(
@@ -300,7 +300,7 @@ function override_attachment_status( $data ) {
 	unset( $parent['post_parent'] );
 
 	$data = array_merge( $data, $parent );
-	$data['post_status'] = 'edit-draft';
+	$data['post_status'] = 'draft';
 
 	return $data;
 }
@@ -334,7 +334,13 @@ function handle_submit_approval( $id ) {
 		wp_die( esc_html__( 'Invalid attachment ID.', 'replace_files' ), 403 );
 	}
 
-	Approval\update_post_status( $attachment->ID, 'edit-pending' );
+	$result = wp_update_post( wp_slash( [
+		'ID'          => $attachment->ID,
+		'post_status' => 'pending'
+	] ) );
+	if ( is_wp_error( $result ) ) {
+		wp_die( $result );
+	}
 
 	$base = admin_url( 'upload.php' );
 	$args = [
