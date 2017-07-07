@@ -132,6 +132,15 @@ function merge_replacement( WP_Post $replacement ) {
 	$metadata = wp_generate_attachment_metadata( $post_id, get_attached_file( $post_id ) );
 	wp_update_attachment_metadata( $post_id, $metadata );
 
+	/**
+	 * Action triggered when a post has had its image replaced.
+	 *
+	 * Use this action to regenerate file-based metadata, flush caches, etc.
+	 *
+	 * @param int $post_id Attachment which had its file replaced.
+	 */
+	do_action( 'replace_files.merge_replacement.replaced', $post_id );
+
 	return true;
 }
 
