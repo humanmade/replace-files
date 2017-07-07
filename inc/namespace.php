@@ -2,7 +2,6 @@
 
 namespace HM\Replace_Files;
 
-use SC\Roles_Capabilities\Helpers as CapHelpers;
 use WP_Post;
 
 /**
@@ -11,26 +10,9 @@ use WP_Post;
 function bootstrap() {
 	Admin\bootstrap();
 
-	add_action( 'register_post_type_args', __NAMESPACE__ . '\\add_caps_to_attachment', 10, 2 );
 	add_action( 'sc_updated_post_with_clone', __NAMESPACE__ . '\\replace_image_with_new', 10, 2 );
 	add_filter( 'sc_clone_post_excluded_meta_keys', __NAMESPACE__ . '\\exclude_attached_file_from_clone' );
 	add_action( 'sc_workflow_reject_post', __NAMESPACE__ . '\\on_reject_post', 10, 2 );
-}
-
-/**
- * Add custom capabilities to attachment post type.
- *
- * @param array $args Arguments for the post type registration.
- * @param string $type Type being registered.
- * @return array
- */
-function add_caps_to_attachment( $args, $type ) {
-	if ( $type !== 'attachment' ) {
-		return $args;
-	}
-
-	// Add our additional caps.
-	return CapHelpers\add_capabilities_to_cpts_register_arguments( $args );
 }
 
 /**
