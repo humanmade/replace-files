@@ -82,9 +82,14 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 						$action .= sprintf(
 							'<a href="%s" class="button">%s</a>',
 							get_accept_url( $post ),
-							esc_html__( 'Accept Replacement', 'replace_files' )
+							esc_html__( 'Accept', 'replace_files' )
 						);
 					}
+					$action .= sprintf(
+						'<a class="button" href="%s">%s</a>',
+						get_reject_url( $post ),
+						esc_html__( 'Reject', 'replace_files' )
+					);
 					break;
 			}
 
@@ -180,6 +185,24 @@ function get_accept_url( WP_Post $attachment ) {
 }
 
 /**
+ * Get "Reject Replacement" URL for a replacement.
+ *
+ * @param WP_Post $attachment Replacement attachment post.
+ * @reutnr string URL for the reject replacement page.
+ */
+function get_reject_url( WP_Post $attachment ) {
+	$parent = get_post( $attachment->post_parent );
+	$base = get_page_url( $parent );
+	$args = [
+		'action' => 'reject-replacement',
+		'new-id' => $attachment->ID,
+		'_wpnonce' => wp_create_nonce( 'hm-replace-reject-replacement' ),
+	];
+	$url = add_query_arg( urlencode_deep( $args ), $base );
+	return $url;
+}
+
+/**
  * Can the current user replace the attachment?
  *
  * @param WP_Post $attachment Attachment post to replace.
@@ -206,25 +229,25 @@ function prepare_page() {
 
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		$action = wp_unslash( $_REQUEST['action'] );
+		if ( empty( $_REQUEST['new-id'] ) ) {
+			wp_die( esc_html__( 'Missing new ID parameter.', 'replace_files' ), 400 );
+		}
+
+		$replacement = absint( wp_unslash( $_REQUEST['new-id'] ) );
 		switch ( $action ) {
 			case 'submit-approval':
 				check_admin_referer( 'hm-replace-submit-approval' );
-				if ( empty( $_REQUEST['new-id'] ) ) {
-					wp_die( esc_html__( 'Missing new ID parameter.', 'replace_files' ), 400 );
-				}
-
-				$replacement = absint( wp_unslash( $_REQUEST['new-id'] ) );
 				handle_submit_approval( $replacement );
 				break;
 
 			case 'accept-replacement':
 				check_admin_referer( 'hm-replace-accept-replacement' );
-				if ( empty( $_REQUEST['new-id'] ) ) {
-					wp_die( esc_html__( 'Missing new ID parameter.', 'replace_files' ), 400 );
-				}
-
-				$replacement = absint( wp_unslash( $_REQUEST['new-id'] ) );
 				handle_accept_replacement( $replacement );
+				break;
+
+			case 'reject-replacement':
+				check_admin_referer( 'hm-replace-reject-replacement' );
+				handle_reject_replacement( $replacement );
 				break;
 
 			default:
@@ -427,6 +450,27 @@ function handle_accept_replacement( $id ) {
 	$args = [
 		'item' => $parent->ID,
 		'hm_replace_files_accepted' => true,
+	];
+	$url = add_query_arg( urlencode_deep( $args ), $base );
+	wp_safe_redirect( $url );
+	exit;
+}
+
+/**
+ * Handle rejecting of a replacement attachment.
+ */
+function handle_reject_replacement( $id ) {
+	$attachment = get_post( $id );
+	if ( ! can_edit( $attachment ) ) {
+		wp_die( esc_html__( 'Invalid attachment ID.', 'replace_files' ), 403 );
+	}
+
+	wp_delete_attachment( $attachment->ID );
+
+	$base = admin_url( 'upload.php' );
+	$args = [
+		'item' => $attachment->post_parent,
+		'hm_replace_files_rejected' => true,
 	];
 	$url = add_query_arg( urlencode_deep( $args ), $base );
 	wp_safe_redirect( $url );
