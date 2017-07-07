@@ -1,6 +1,6 @@
 <?php
 
-namespace SC\Replace_Files;
+namespace HM\Replace_Files;
 
 use SC\Roles_Capabilities\Helpers as CapHelpers;
 use WP_Post;

@@ -1,6 +1,6 @@
-/* global plupload, scReplaceFilesSettings */
+/* global plupload, hmReplaceFilesSettings */
 ( function( $ ) {
-	var options = scReplaceFilesSettings;
+	var options = hmReplaceFilesSettings;
 	var uploader, statusTemplate, errorTemplate;
 
 	// Progress and success handlers for media multi uploads
@@ -46,7 +46,7 @@
 
 		progress: renderStatus,
 		success: function( attachment ) {
-			$( '#scrf-new-id' ).val( attachment.id );
+			$( '#hmrf-new-id' ).val( attachment.id );
 			renderStatus( attachment );
 		},
 
@@ -73,8 +73,8 @@
 	};
 
 	$( document ).ready( function() {
-		statusTemplate = wp.template( 'scrf-upload-status' );
-		errorTemplate = wp.template( 'scrf-upload-error' );
+		statusTemplate = wp.template( 'hmrf-upload-status' );
+		errorTemplate = wp.template( 'hmrf-upload-error' );
 
 		init();
 	});

@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: Standard Chartered Replace Files
+ * Plugin Name: HM Replace Files
  * Description: Allow replacing files after they've been uploaded.
  * Author: Human Made
  * Author URI: https://hmn.md/
  */
 
-namespace SC\Replace_Files;
+namespace HM\Replace_Files;
 
 const DIR = __DIR__;
 const FILE = __FILE__;

@@ -1,13 +1,13 @@
 <?php
 
-namespace SC\Replace_Files\Admin;
+namespace HM\Replace_Files\Admin;
 
+use HM\Replace_Files;
 use SC\Publish_Workflow\Approval;
 use SC\Publish_Workflow\Edit;
-use SC\Replace_Files;
 use WP_Post;
 
-const PAGE_SLUG = 'sc-replace-file';
+const PAGE_SLUG = 'hm-replace-file';
 const PENDING_STATUS = 'replace-pending';
 const UPLOAD_CAP = 'upload_files';
 
@@ -50,14 +50,14 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 		return $fields;
 	}
 
-	$fields['sc_replace_file'] = [
-		'label' => __( 'Replace File', 'sc' ),
+	$fields['hm_replace_file'] = [
+		'label' => __( 'Replace File', 'replace_files' ),
 		'input' => 'html',
 		'value' => '',
 		'html' => sprintf(
 			'<a class="button-secondary" href="%s">%s</a>',
 			esc_url( get_page_url( $attachment ) ),
-			esc_html__( 'Upload replacement file', 'sc' )
+			esc_html__( 'Upload replacement file', 'replace_files' )
 		),
 	];
 
@@ -74,17 +74,17 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 					$action = sprintf(
 						'<a class="button" href="%s">%s</a>',
 						esc_url( get_submit_url( $post ) ),
-						esc_html__( 'Submit for Approval', 'sc' )
+						esc_html__( 'Submit for Approval', 'replace_files' )
 					);
 					break;
 
 				case 'edit-pending':
-					$action = esc_html__( 'Awaiting approval', 'sc' ) . '<br />';
+					$action = esc_html__( 'Awaiting approval', 'replace_files' ) . '<br />';
 					if ( current_user_can( 'preview_post', $post->ID ) ) {
 						$action .= sprintf(
 							'<a href="%s" class="button">%s</a>',
 							Approval\get_action_url( $post->ID, 'preview' ),
-							esc_html__( 'Preview', 'sc' )
+							esc_html__( 'Preview', 'replace_files' )
 						);
 					}
 					break;
@@ -111,7 +111,7 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 				$url,
 				$preview,
 				sprintf(
-					esc_html__( 'Uploaded by %s', 'sc' ),
+					esc_html__( 'Uploaded by %s', 'replace_files' ),
 					esc_html( $author->display_name )
 				),
 				$action
@@ -122,7 +122,7 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 		if ( empty( $fields['_final'] ) ) {
 			$fields['_final'] = '';
 		}
-		$fields['_final'] .= sprintf( '<h3>%s</h3>', esc_html__( 'Pending Changes', 'sc' ) );
+		$fields['_final'] .= sprintf( '<h3>%s</h3>', esc_html__( 'Pending Changes', 'replace_files' ) );
 		$fields['_final'] .= '<table>' . implode( '', $items ) . '</table>';
 	}
 
@@ -138,7 +138,7 @@ function add_replace_button_to_fields( $fields, WP_Post $attachment ) {
 function get_page_url( WP_Post $attachment ) {
 	$base = admin_url( 'upload.php' );
 	$args = [
-		'page' => 'sc-replace-file',
+		'page' => PAGE_SLUG,
 		'id'   => $attachment->ID,
 	];
 	$url = add_query_arg( urlencode_deep( $args ), $base );
@@ -157,7 +157,7 @@ function get_submit_url( WP_Post $attachment ) {
 	$args = [
 		'action' => 'submit-approval',
 		'new-id' => $attachment->ID,
-		'_wpnonce' => wp_create_nonce( 'sc-replace-submit-approval' ),
+		'_wpnonce' => wp_create_nonce( 'hm-replace-submit-approval' ),
 	];
 	$url = add_query_arg( urlencode_deep( $args ), $base );
 	return $url;
@@ -181,22 +181,22 @@ function can_replace( WP_Post $attachment ) {
 function prepare_page() {
 	// Double-check cap.
 	if ( empty( $_GET['id'] ) ) {
-		wp_die( esc_html__( 'Missing ID parameter.', 'sc' ), 400 );
+		wp_die( esc_html__( 'Missing ID parameter.', 'replace_files' ), 400 );
 	}
 
 	if ( ! current_user_can( UPLOAD_CAP ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'sc' ), 403 );
+		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'replace_files' ), 403 );
 	}
 
 	if ( ! empty( $_REQUEST['action'] ) ) {
 		$action = wp_unslash( $_REQUEST['action'] );
 		if ( $action !== 'submit-approval' ) {
-			wp_die( esc_html__( 'Invalid action.', 'sc' ), 400 );
+			wp_die( esc_html__( 'Invalid action.', 'replace_files' ), 400 );
 		}
 
-		check_admin_referer( 'sc-replace-submit-approval' );
+		check_admin_referer( 'hm-replace-submit-approval' );
 		if ( empty( $_REQUEST['new-id'] ) ) {
-			wp_die( esc_html__( 'Missing new ID parameter.', 'sc' ), 400 );
+			wp_die( esc_html__( 'Missing new ID parameter.', 'replace_files' ), 400 );
 		}
 
 		$replacement = absint( wp_unslash( $_REQUEST['new-id'] ) );
@@ -206,18 +206,18 @@ function prepare_page() {
 	$id = absint( wp_unslash( $_GET['id'] ) );
 	$attachment = get_post( $id );
 	if ( ! can_replace( $attachment ) || $attachment->post_type !== 'attachment' ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to replace this file.', 'sc' ), 403 );
+		wp_die( esc_html__( 'Sorry, you are not allowed to replace this file.', 'replace_files' ), 403 );
 	}
 
 	// Set page title.
-	$GLOBALS['title'] = __( 'Replace Existing File', 'sc' ); // WPCS: override ok.
+	$GLOBALS['title'] = __( 'Replace Existing File', 'replace_files' ); // WPCS: override ok.
 
 	$url = plugins_url( 'assets/upload.js', Replace_Files\FILE );
 	$deps = [
 		'wp-backbone',
 		'wp-plupload',
 	];
-	wp_enqueue_script( 'sc-replace-files-uploader', $url, $deps, false, true );
+	wp_enqueue_script( 'hm-replace-files-uploader', $url, $deps, false, true );
 }
 
 /**
@@ -233,8 +233,8 @@ function render_page() {
 	$filename = basename( $path );
 
 	// Header.
-	printf( '<h1>%s</h1>', esc_html__( 'Replace Existing File', 'sc' ) );
-	echo wp_kses( sprintf( '<p>' . __( 'Replacing <code>%s</code>', 'sc' ) . '</p>', $filename ), 'data' );
+	printf( '<h1>%s</h1>', esc_html__( 'Replace Existing File', 'replace_files' ) );
+	echo wp_kses( sprintf( '<p>' . __( 'Replacing <code>%s</code>', 'replace_files' ) . '</p>', $filename ), 'data' );
 
 	// Upload form.
 	$url = get_page_url( $attachment );
@@ -252,11 +252,11 @@ function set_uploader_settings( WP_Post $attachment ) {
 		'plupload' => array(
 			'multipart_params' => array(
 				'post_id' => $attachment->ID,
-				'sc_replace_file' => wp_create_nonce( 'sc_replace_file' ),
+				'hm_replace_file' => wp_create_nonce( 'hm_replace_file' ),
 			),
 		),
 	];
-	wp_localize_script( 'sc-replace-files-uploader', 'scReplaceFilesSettings', $settings );
+	wp_localize_script( 'hm-replace-files-uploader', 'hmReplaceFilesSettings', $settings );
 }
 
 /**
@@ -273,12 +273,12 @@ function override_attachment_status( $data ) {
 		return $data;
 	}
 
-	if ( empty( $_REQUEST['sc_replace_file'] ) ) {
+	if ( empty( $_REQUEST['hm_replace_file'] ) ) {
 		return $data;
 	}
 
-	$nonce = wp_unslash( $_REQUEST['sc_replace_file'] );
-	if ( ! wp_verify_nonce( $nonce, 'sc_replace_file' ) ) {
+	$nonce = wp_unslash( $_REQUEST['hm_replace_file'] );
+	if ( ! wp_verify_nonce( $nonce, 'hm_replace_file' ) ) {
 		return $data;
 	}
 
@@ -332,7 +332,7 @@ function clone_attachment_meta( $id ) {
 function handle_submit_approval( $id ) {
 	$attachment = get_post( $id );
 	if ( ! $attachment || ! current_user_can( 'edit_post', $attachment->ID ) || $attachment->post_type !== 'attachment' ) {
-		wp_die( esc_html__( 'Invalid attachment ID.', 'sc' ), 403 );
+		wp_die( esc_html__( 'Invalid attachment ID.', 'replace_files' ), 403 );
 	}
 
 	Approval\update_post_status( $attachment->ID, 'edit-pending' );
@@ -340,7 +340,7 @@ function handle_submit_approval( $id ) {
 	$base = admin_url( 'upload.php' );
 	$args = [
 		'item' => $attachment->post_parent,
-		'sc_submitted' => true,
+		'hm_replace_files_submitted' => true,
 	];
 	$url = add_query_arg( urlencode_deep( $args ), $base );
 	wp_safe_redirect( $url );
