@@ -56,8 +56,8 @@ function clone_post_meta( $from, $to, $is_update = false ) {
 		);
 	}
 
-	$from_meta = get_post_meta( $from );
-	$to_meta = get_post_meta( $to );
+	$from_meta = get_post_meta( $from->ID );
+	$to_meta = get_post_meta( $to->ID );
 	foreach ( get_excluded_meta_keys() as $key ) {
 		unset( $from_meta[ $key ] );
 		unset( $to_meta[ $key ] );

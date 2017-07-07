@@ -384,14 +384,12 @@ function handle_submit_approval( $id ) {
 	};
 	add_filter( 'wp_insert_attachment_data', $callback );
 
-	$post_id = wp_update_post( array(
+	$result = wp_update_post( array(
 		'ID'          => $attachment->ID,
 		'post_status' => $status,
-	));
+	), true );
 
-	if ( $post->post_type === 'attachment' ) {
-		remove_filter( 'wp_insert_attachment_data', $callback );
-	}
+	remove_filter( 'wp_insert_attachment_data', $callback );
 
 	if ( is_wp_error( $result ) ) {
 		wp_die( $result );
