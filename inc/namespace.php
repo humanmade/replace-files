@@ -84,6 +84,57 @@ function clone_post_meta( $from, $to, $is_update = false ) {
 }
 
 /**
+ * Update original attachment with replacement post's
+ *
+ * @param WP_Post $clone_post Clone post object.
+ *
+ * @return bool|WP_Error TRUE on success, WP_Error object on failure.
+ */
+function merge_replacement( WP_Post $replacement ) {
+	if ( empty( $replacement->post_parent ) ) {
+		wp_delete_post( $replacement->ID );
+		return new WP_Error(
+			'replace_files.merge_replacement.invalid_parent',
+			__( 'Invalid parent on replacement attachment.', 'replace_files' )
+		);
+	}
+
+	$orig_post_data = get_post( $replacement->post_parent, ARRAY_A );
+	if ( ! $orig_post_data ) {
+		wp_delete_post( $replacement->ID );
+		return new WP_Error(
+			'replace_files.merge_replacement.invalid_parent',
+			__( 'Invalid parent on replacement attachment.', 'replace_files' )
+		);
+	}
+
+	$edit_post_data = get_post( $replacement, ARRAY_A );
+
+	unset( $edit_post_data['ID'] );
+	unset( $edit_post_data['guid'] );
+	unset( $edit_post_data['post_name'] );
+	unset( $edit_post_data['post_author'] );
+	unset( $edit_post_data['post_parent'] );
+	unset( $edit_post_data['post_status'] );
+	unset( $edit_post_data['file'] );
+
+	$updated_post_data = wp_parse_args( $edit_post_data, $orig_post_data );
+	$result = wp_update_post( $updated_post_data, true );
+
+	if ( is_wp_error( $result ) ) {
+		return $result;
+	}
+
+	replace_image_with_new( $orig_post_data['ID'], $replacement->ID );
+
+	delete_post_meta( $orig_post_data['ID'], 'cloned_to_post' );
+	clone_post_meta( $replacement->ID, $orig_post_data['ID'], true );
+	wp_delete_post( $replacement->ID, true );
+
+	return true;
+}
+
+/**
  * Replace the original image with the new one.
  *
  * @param int $original_id Original attachment ID.
