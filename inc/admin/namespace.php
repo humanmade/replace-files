@@ -334,10 +334,24 @@ function handle_submit_approval( $id ) {
 		wp_die( esc_html__( 'Invalid attachment ID.', 'replace_files' ), 403 );
 	}
 
-	$result = wp_update_post( wp_slash( [
+	// Force via a filter. wp_insert_post has a hardcoded whitelist, so we
+	// need to override via a late filter.
+	$status = 'pending';
+	$callback = function ( $data ) use ( $status ) {
+		$data['post_status'] = $status;
+		return $data;
+	};
+	add_filter( 'wp_insert_attachment_data', $callback );
+
+	$post_id = wp_update_post( array(
 		'ID'          => $attachment->ID,
-		'post_status' => 'pending'
-	] ) );
+		'post_status' => $status,
+	));
+
+	if ( $post->post_type === 'attachment' ) {
+		remove_filter( 'wp_insert_attachment_data', $callback );
+	}
+
 	if ( is_wp_error( $result ) ) {
 		wp_die( $result );
 	}
