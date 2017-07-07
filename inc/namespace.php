@@ -10,10 +10,6 @@ use WP_Post;
  */
 function bootstrap() {
 	Admin\bootstrap();
-
-	add_action( 'sc_updated_post_with_clone', __NAMESPACE__ . '\\replace_image_with_new', 10, 2 );
-	add_filter( 'sc_clone_post_excluded_meta_keys', __NAMESPACE__ . '\\exclude_attached_file_from_clone' );
-	add_action( 'sc_workflow_reject_post', __NAMESPACE__ . '\\on_reject_post', 10, 2 );
 }
 
 /**

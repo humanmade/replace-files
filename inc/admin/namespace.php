@@ -3,7 +3,6 @@
 namespace HM\Replace_Files\Admin;
 
 use HM\Replace_Files;
-use SC\Publish_Workflow\Approval;
 use WP_Post;
 
 const PAGE_SLUG = 'hm-replace-file';
