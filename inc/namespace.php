@@ -125,11 +125,16 @@ function merge_replacement( WP_Post $replacement ) {
 		return $result;
 	}
 
-	replace_image_with_new( $orig_post_data['ID'], $replacement->ID );
+	$post_id = $orig_post_data['ID'];
+	replace_image_with_new( $post_id, $replacement->ID );
 
-	delete_post_meta( $orig_post_data['ID'], 'cloned_to_post' );
-	clone_post_meta( $replacement->ID, $orig_post_data['ID'], true );
+	delete_post_meta( $post_id, 'cloned_to_post' );
+	clone_post_meta( $replacement->ID, $post_id, true );
 	wp_delete_post( $replacement->ID, true );
+
+	// Regenerate attachment meta with the new file.
+	$metadata = wp_generate_attachment_metadata( $post_id, get_attached_file( $post_id ) );
+	wp_update_attachment_metadata( $post_id, $metadata );
 
 	return true;
 }
