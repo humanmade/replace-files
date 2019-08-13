@@ -1,0 +1,19 @@
+{
+    "name": "humanmade/replace-files",
+    "description": "Plugin which allows you to upload a replacement for an existing attachment.",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Human Made",
+            "email": "hello@humanmade.com",
+            "homepage": "https://humanmade.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/humanmade/replace-files",
+    "type": "wordpress-plugin",
+    "support": {
+        "issues": "https://github.com/humanmade/replace-files/issues",
+        "source": "https://github.com/humanmade/replace-files/"
+    }
+}
