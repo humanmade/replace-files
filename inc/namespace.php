@@ -10,6 +10,7 @@ use WP_Post;
  */
 function bootstrap() {
 	Admin\bootstrap();
+	load_plugin_textdomain( 'replace_files', false, basename( \HM\Replace_Files\DIR ) . '/languages' );
 }
 
 /**
